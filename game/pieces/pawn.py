@@ -66,21 +66,34 @@ class Pawn(Piece):
 
     def get_valid_moves(self):
         candidates = self.get_moves()
-        final = []
+        final = {}
 
         for square in candidates:
             result = self.run_test(square)
 
-            def move(promote_to):
-                self.move(square, promote_to)
+            def move(sq, promote_to=None):
+                if self.square.board.en_passant_square and sq == self.square.board.en_passant_square:
+                    self.square.board.get_square_by_pos(sq.file, self.square.rank).clear()
+                    self.square.board.en_passant_square = None
+                elif self.square.rank - sq.rank in [2, -2]:
+                    rank = 3 if self.square.rank == 2 else 6
+                    self.square.board.en_passant_square = self.square.board.get_square_by_pos(self.square.file, rank)
+                else:
+                    self.square.board.en_passant_square = None
+                self.move(sq, promote_to)
 
-            if result == "PASSED": final.append(move)
+            if result == "PASSED": final[square.pos] = (move, square)
 
         return final
 
     def move(self, square, promote_to=None):
+        self.square.board.half_moves = 0
+        self.square.board.move = 1 if self.color == 0 else 0
+        if self.color == 0: self.square.board.full_moves += 1
         if square.rank in [1, 8]:
             if not promote_to: raise Exception('Need to provide a promotion class.')
             promoted = promote_to(self.color, self.square)
             square.set_piece(self)
             square.set_piece(promoted)
+        else:
+            square.set_piece(self)

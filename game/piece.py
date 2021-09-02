@@ -48,15 +48,15 @@ class Piece(object):
 
     def get_valid_moves(self):
         candidates = self.get_moves()
-        final = []
+        final = {}
 
         for square in candidates:
             result = self.run_test(square)
 
-            def move():
-                self.move(square)
+            def move(sq):
+                self.move(sq)
 
-            if result == "PASSED": final.append(move)
+            if result == "PASSED": final[square.pos] = (move, square)
 
         return final
 
@@ -68,7 +68,12 @@ class Piece(object):
         else: return "PASSED"
 
     def move(self, square):
+        self.square.board.en_passant_square = None
+        self.square.board.half_moves += 1
+        if square.piece: self.square.board.half_moves = 0
         square.set_piece(self)
+        self.square.board.move = 1 if self.color == 0 else 0
+        if self.color == 0: self.square.board.full_moves += 1
 
     def __str__(self):
         return self.symbol.upper() if self.color else self.symbol

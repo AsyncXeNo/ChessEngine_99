@@ -72,26 +72,26 @@ class King(Piece):
         if self.castle_k:
             sq1 = self.square.board.get_square_by_pos(self.square.file + 1, self.square.rank)
             sq2 = self.square.board.get_square_by_pos(self.square.file + 2, self.square.rank)
-            k_rook = self.square.board.get_square_by_pos(self.square.file + 3, self.square.rank)
+            k_rook = self.square.board.get_square_by_pos(self.square.file + 3, self.square.rank).piece
 
-            def move():
-                self.move(sq2)
-                k_rook.move(sq1)
+            def move(args):
+                self.move(args[0])
+                k_rook.move(args[1])
 
             if not sq1.piece and not sq2.piece:
-                if not self.in_check(sq1) and not self.in_check(sq2): final.append(move)
+                if not self.in_check(sq1) and not self.in_check(sq2): final[sq2.pos] = (move, [sq2, sq1])
 
         if self.castle_q:
             sq1 = self.square.board.get_square_by_pos(self.square.file - 1, self.square.rank)
             sq2 = self.square.board.get_square_by_pos(self.square.file - 2, self.square.rank)
-            q_rook = self.square.board.get_square_by_pos(self.square.file - 4, self.square.rank)
+            q_rook = self.square.board.get_square_by_pos(self.square.file - 4, self.square.rank).piece
 
-            def move():
-                self.move(sq2)
-                q_rook.move(sq1)
+            def move(args):
+                self.move(args[0])
+                q_rook.move(args[1])
 
             if not sq1.piece and not sq2.piece:
-                if not self.in_check(sq1) and not self.in_check(sq2): final.append(move)
+                if not self.in_check(sq1) and not self.in_check(sq2): final[sq2.pos] = (move, [sq2, sq1])
 
         return final
 
