@@ -42,6 +42,11 @@ class Pawn(Piece):
                         squares.append(sq)
                 else: break
 
+        return squares
+
+    def get_valid_squares(self):
+        candidates = self.get_moves()
+        current = list(self.square.pos)
         for offset in self.moving_offsets:
             new = current.copy()
             for _ in range(self.get_move_range()):
@@ -50,12 +55,7 @@ class Pawn(Piece):
                 if new[0] not in range(1, 9) or new[1] not in range(1, 9): break
                 sq = self.square.board.get_square_by_pos(new[0], new[1])
                 if sq.piece: break
-                else: squares.append(sq)
-
-        return squares
-
-    def get_valid_squares(self):
-        candidates = self.get_moves()
+                else: candidates.append(sq)
         final = []
 
         for square in candidates:
@@ -66,6 +66,16 @@ class Pawn(Piece):
 
     def get_valid_moves(self):
         candidates = self.get_moves()
+        current = list(self.square.pos)
+        for offset in self.moving_offsets:
+            new = current.copy()
+            for _ in range(self.get_move_range()):
+                new[0] += offset[0]
+                new[1] += offset[1]
+                if new[0] not in range(1, 9) or new[1] not in range(1, 9): break
+                sq = self.square.board.get_square_by_pos(new[0], new[1])
+                if sq.piece: break
+                else: candidates.append(sq)
         final = {}
 
         for square in candidates:
