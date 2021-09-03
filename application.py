@@ -1,12 +1,7 @@
 import sys
 import pygame
 
-from my_logging import get_logger
 from game.pieces import queen, rook, knight, bishop
-from game.chess_utils import convert_to_fen
-
-
-logger = get_logger(__name__)
 
 
 class Application(object):
@@ -58,9 +53,6 @@ class Application(object):
                 self.running = False
                 pygame.quit()
                 sys.exit()
-
-            if event.type == pygame.KEYDOWN:
-                logger.info(convert_to_fen(self.board))
 
             if event.type == pygame.MOUSEBUTTONUP:
                 pos = pygame.mouse.get_pos()
