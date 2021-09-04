@@ -37,11 +37,11 @@ def handle_client(conn, address):
 
     connected = True
     while connected:
-        # time.sleep(0.5)
-        # board = Board(games[conns[conn]][2])
-        # if board.move != games[conns[conn]].index(conn):
-        msg = conn.recv(HEADER).decode(FORMAT)
-        # else: continue
+        time.sleep(0.5)
+        board = Board(games[conns[conn]][2])
+        if board.move == games[conns[conn]].index(conn):
+            msg = conn.recv(HEADER).decode(FORMAT)
+        else: continue
         logger.info(f'Message received from {address}.')
         if msg:
             if msg == DISCONNECT_MESSAGE:
@@ -57,8 +57,9 @@ def handle_client(conn, address):
 
                 index = 1 if games[conns[conn]].index(conn) == 0 else 0
 
+                conn.send(fen.encode(FORMAT))
+
                 if games[conns[conn]][index]:
-                    print(games[conns[conn]][index])
                     games[conns[conn]][index].send(fen.encode(FORMAT))
 
             logger.info(f'[{address}] {msg}')

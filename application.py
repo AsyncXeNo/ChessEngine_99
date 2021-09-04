@@ -195,17 +195,16 @@ class Application(object):
                 self.color = color
                 self.pov = color
                 self.board = Board(' '.join(split))
-                print('board updated.')
+                print('Board updated.')
                 self.client.send('FIRST MESSAGE'.encode(self.FORMAT))
                 break
 
         while self.connected:
-            print('listening for opp move.')
+            print('Listening for opp move.')
             msg = self.client.recv(self.HEADER).decode(self.FORMAT)
             if msg:
-                msg = self.client.recv(self.HEADER).decode(self.FORMAT)
                 self.board = Board(msg)
-                print('board updated.')
+                print('Board updated.')
 
         self.client.send('!DISCONNECT'.encode(self.FORMAT))
 
