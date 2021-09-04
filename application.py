@@ -1,12 +1,24 @@
 import sys
 import pygame
+import socket
+import threading
 
 from game.pieces import queen, rook, knight, bishop
+from game.board import Board
+from game.chess_utils import convert_to_fen
 
 
 class Application(object):
     def __init__(self, color, width, height, board):
         pygame.init()
+
+        self.PORT = 5678
+        self.SERVER = socket.gethostbyname(socket.gethostname())
+        self.ADDRESS = (self.SERVER, self.PORT)
+
+        self.HEADER = 256
+        self.FORMAT = 'utf-8'
+        self.DISCONNECT_MESSAGE = '!DISCONNECT'
 
         self.color = color
         self.pov = self.color
@@ -45,11 +57,17 @@ class Application(object):
         self.selected = None
         self.promotion_prompt = False
 
+        self.connected = True
+        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        self.game_id = None
+
         self.run()
 
     def event_handler(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                self.connected = False
                 self.running = False
                 pygame.quit()
                 sys.exit()
@@ -71,11 +89,12 @@ class Application(object):
 
                     move_func, args = self.selected.get_valid_moves()[self.promotion_prompt.pos]
                     move_func(args, promote_to)
+                    self.client.send(f'{self.game_id} {convert_to_fen(self.board)}'.encode(self.FORMAT))
                     self.selected = None
                     self.promotion_prompt = None
 
                 if square.piece:
-                    if square.piece.color == self.board.move:
+                    if square.piece.color == self.board.move and square.piece.color == self.color:
                         if self.selected == square.piece: self.selected = None
                         else: self.selected = square.piece
                         continue
@@ -88,6 +107,7 @@ class Application(object):
                             continue
                         move_func, args = self.selected.get_valid_moves()[square.pos]
                         move_func(args)
+                        self.client.send(f'{self.game_id} {convert_to_fen(self.board)}'.encode(self.FORMAT))
                         self.selected = None
                     self.selected = None
 
@@ -163,7 +183,43 @@ class Application(object):
         self.win.blit(full_moves_render, full_moves_render_rect)
         pygame.display.update()
 
+    def run_client(self):
+        self.client.connect(self.ADDRESS)
+
+        while True:
+            msg = self.client.recv(self.HEADER).decode(self.FORMAT)
+            if msg:
+                split = msg.split(' ')
+                self.game_id = split.pop(0)
+                color = int(split.pop(0))
+                self.color = color
+                self.pov = color
+                self.board = Board(' '.join(split))
+                print('board updated.')
+                self.client.send('FIRST MESSAGE'.encode(self.FORMAT))
+                break
+
+        while self.connected:
+            print('listening for opp move.')
+            msg = self.client.recv(self.HEADER).decode(self.FORMAT)
+            if msg:
+                msg = self.client.recv(self.HEADER).decode(self.FORMAT)
+                self.board = Board(msg)
+                print('board updated.')
+
+        self.client.send('!DISCONNECT'.encode(self.FORMAT))
+
+    # def send_msg(self, msg):
+    #     msg = msg.encode(self.FORMAT)
+    #     # msg_length = str(len(msg)).encode(self.FORMAT)
+    #     # msg_length += b' ' * (self.HEADER - len(msg_length))
+    #     # self.client.send(msg_length)
+    #     self.client.send(msg.encode(self.FORMAT))
+
     def run(self):
+        server_stuff = threading.Thread(target=self.run_client, args=())
+        server_stuff.start()
+
         while self.running:
             self.event_handler()
             self.graphics_handler()

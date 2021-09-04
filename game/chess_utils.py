@@ -1,3 +1,7 @@
+import string
+import random
+import json
+
 from game.constants import NUM_TO_COLOR, COLOR_TO_NUM, FILE_TO_NUM, SYMBOL_TO_PIECE
 
 
@@ -76,3 +80,19 @@ def setup(board, fen):
             else: square.set_piece(piece(color, square))
 
             file += 1
+
+
+def generate_id(length=6):
+    with open("data/generated_ids.json", "r") as f:
+        generated = json.load(f)
+
+    gen = "".join(random.choices(string.ascii_uppercase, k=length))
+    while gen in generated:
+        gen = ''.join(random.choices(string.ascii_uppercase, k=length))
+
+    generated.append(gen)
+
+    with open("data/generated_ids.json", "w") as f:
+        json.dump(generated, f, indent=4)
+
+    return gen

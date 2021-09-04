@@ -14,7 +14,7 @@ class Square(object):
         self.piece = piece
 
     def get_name(self):
-        return f'{NUM_TO_FILE[self.file]}{self.rank} - {"null" if not self.piece else self.piece}'
+        return f'{NUM_TO_FILE[self.file]}{self.rank}'
 
     def clear(self):
         self.piece.square = None
