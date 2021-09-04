@@ -14,7 +14,7 @@ FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = '!DISCONNECT'
 
 PORT = 5678
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = ''
 ADDRESS = (SERVER, PORT)
 
 logger = get_logger(__name__)
