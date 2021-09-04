@@ -1,5 +1,3 @@
-import threading
-
 from my_logging import get_logger
 from application import Application
 from game.board import Board
